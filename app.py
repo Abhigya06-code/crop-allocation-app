@@ -201,6 +201,7 @@ h1,h2,h3,h4,.section-label,.metric-card .metric-value,.hero .crop,.stage-label,.
 [data-testid="stSidebar"] { background: rgba(6,40,30,.88) !important; backdrop-filter: blur(20px); }
 .step-badge { background: linear-gradient(135deg,#10B981,#0D9488); }
 
+.why-card.why-no { border-left:5px solid #F59E0B !important; }
 .pie-legend { display:flex; flex-direction:column; gap:.45rem; margin:.4rem 0 .8rem 0; }
 .pie-legend-row { display:flex; align-items:center; gap:.7rem; background:rgba(255,255,255,.7); border:1px solid rgba(255,255,255,.9); border-radius:14px; padding:.55rem .9rem; box-shadow:0 4px 14px rgba(6,78,59,.08); }
 .pie-legend-row .dot { width:14px; height:14px; border-radius:50%; flex:0 0 auto; }
@@ -237,14 +238,20 @@ T = {
         "enter_pw": "Enter your Postgres password in the sidebar to get started.",
         "form_title": "Enter your plot details", "name": "Your name",
         "district": "District (select from Tamil Nadu's 37 districts)", "season": "Season",
-        "land": "Land available — in acres", "budget": "Budget — in rupees (₹)",
-        "water": "Water available — in mm per acre",
+        "land": "Land available (acres)", "budget": "Budget (₹)",
+        "water": "Water available (mm per acre)",
         "land_ph": "e.g. 2", "budget_ph": "e.g. 40000", "water_ph": "e.g. 1000",
         "submit": "Get my crop plan", "missing": "Please fill in every field before submitting.",
         "plan_for": "Plan for", "plan_title": "Crop plan for {name} in {district} district", "land_m": "Land (acres)", "budget_m": "Budget (₹)", "rec_m": "Crops recommended",
         "avg_profit": "Avg. profit per acre (₹)", "your_plan": "Your Crop Plan", "not_rec": "Not Recommended",
         "allocation": "Land Allocation", "details": "Details", "download_pdf": "Download plan as PDF",
         "download_csv": "Download as CSV", "why_chosen": "Why each crop was chosen",
+        "range_land": "Land must be between 0.1 and 200 acres.",
+        "range_budget": "Budget must be between \u20b91,000 and \u20b950,00,000.",
+        "range_water": "Water must be between 50 and 3,000 mm per acre. Most crops here need about 400 to 2,500 mm in a season.",
+        "empty_budget": "No single crop fits your budget for all {land} acres. Your {budget} can cover about {acres} acres of the cheapest option ({crop}). Try entering {acres} acres.",
+        "empty_budget_small": "Your budget is too small to grow any of these crops, even on a small plot. The cheapest option ({crop}) costs about {cost} per acre.",
+        "empty_water": "Your water is the limit. The least water-hungry crop here needs about {need} mm per acre, but you entered {have} mm.",
         "no_crops": "No crops were profitable and within limits for this plot. Try a larger budget or more water.",
         "all_included": "Every eligible crop made it into the plan, nothing was excluded.",
         "top_pick": "Top Recommendation", "top_pick_of": "of your land",
@@ -279,7 +286,7 @@ T = {
         "fc_label": "Forecast price", "fc_range": "likely range", "fc_unit": "per quintal",
         "nav_label": "View", "nav_plan": "Get a Crop Plan", "nav_dashboard": "District Dashboard",
         "dash_title": "District & Crop Dashboard",
-        "dash_subtitle": "Aggregated patterns across every plan generated so far — not just the current farmer.",
+        "dash_subtitle": "Patterns across every plan generated so far, not just the current farmer.",
         "dash_no_data": "No farmer requests yet. Generate at least one crop plan first, then come back here.",
         "dash_total_requests": "Total requests", "dash_total_farmers": "Farmers served",
         "dash_districts": "Districts represented", "dash_top_crop_overall": "Most-recommended crop overall",
@@ -304,14 +311,20 @@ T = {
         "enter_pw": "தொடங்க பக்கப்பட்டியில் உங்கள் Postgres கடவுச்சொல்லை உள்ளிடவும்.",
         "form_title": "உங்கள் நிலத்தின் விவரங்களை உள்ளிடவும்", "name": "உங்கள் பெயர்",
         "district": "மாவட்டம் (37 மாவட்டங்களிலிருந்து தேர்ந்தெடுக்கவும்)", "season": "பருவம்",
-        "land": "கிடைக்கும் நிலம் — ஏக்கரில்", "budget": "பட்ஜெட் — ரூபாயில் (₹)",
-        "water": "கிடைக்கும் நீர் — மிமீ/ஏக்கர்",
+        "land": "கிடைக்கும் நிலம் (ஏக்கர்)", "budget": "பட்ஜெட் (₹)",
+        "water": "கிடைக்கும் நீர் (மிமீ/ஏக்கர்)",
         "land_ph": "எ.கா. 2", "budget_ph": "எ.கா. 40000", "water_ph": "எ.கா. 1000",
         "submit": "எனது பயிர் திட்டத்தைப் பெறு", "missing": "சமர்ப்பிக்கும் முன் அனைத்து புலங்களையும் நிரப்பவும்.",
         "plan_for": "திட்டம்", "plan_title": "{name} · {district} மாவட்டத்திற்கான பயிர் திட்டம்", "land_m": "நிலம் (ஏக்கர்)", "budget_m": "பட்ஜெட் (₹)", "rec_m": "பரிந்துரைக்கப்பட்ட பயிர்கள்",
         "avg_profit": "சராசரி லாபம்/ஏக்கர் (₹)", "your_plan": "உங்கள் பயிர் திட்டம்", "not_rec": "பரிந்துரைக்கப்படவில்லை",
         "allocation": "நில ஒதுக்கீடு", "details": "விவரங்கள்", "download_pdf": "PDF பதிவிறக்கு",
         "download_csv": "CSV பதிவிறக்கு", "why_chosen": "ஒவ்வொரு பயிரும் ஏன் தேர்ந்தெடுக்கப்பட்டது",
+        "range_land": "நிலம் 0.1 முதல் 200 ஏக்கருக்குள் இருக்க வேண்டும்.",
+        "range_budget": "பட்ஜெட் \u20b91,000 முதல் \u20b950,00,000 வரை இருக்க வேண்டும்.",
+        "range_water": "நீர் ஏக்கருக்கு 50 முதல் 3,000 மி.மீ வரை இருக்க வேண்டும். இங்குள்ள பெரும்பாலான பயிர்களுக்கு ஒரு பருவத்தில் சுமார் 400 முதல் 2,500 மி.மீ தேவை.",
+        "empty_budget": "உங்கள் பட்ஜெட்டில் அனைத்து {land} ஏக்கருக்கும் எந்தப் பயிரும் பொருந்தவில்லை. உங்கள் {budget} கொண்டு மிகக் குறைந்த செலவுள்ள பயிரை ({crop}) சுமார் {acres} ஏக்கரில் பயிரிடலாம். {acres} ஏக்கர் என உள்ளிட்டுப் பாருங்கள்.",
+        "empty_budget_small": "உங்கள் பட்ஜெட் மிகவும் குறைவு; சிறிய நிலத்திலும் இந்தப் பயிர்களில் எதையும் பயிரிட முடியாது. மிகக் குறைந்த செலவுள்ள பயிருக்கு ({crop}) ஏக்கருக்கு சுமார் {cost} செலவாகும்.",
+        "empty_water": "உங்கள் நீர்தான் வரம்பு. இங்கு மிகக் குறைந்த நீர் தேவைப்படும் பயிருக்கு ஏக்கருக்கு சுமார் {need} மி.மீ தேவை; நீங்கள் {have} மி.மீ உள்ளிட்டுள்ளீர்கள்.",
         "no_crops": "இந்த நிலத்திற்கு லாபகரமான பயிர்கள் இல்லை. அதிக பட்ஜெட் அல்லது நீரை முயற்சிக்கவும்.",
         "all_included": "தகுதியான அனைத்து பயிர்களும் திட்டத்தில் சேர்க்கப்பட்டன.",
         "top_pick": "சிறந்த பரிந்துரை", "top_pick_of": "உங்கள் நிலத்தில்",
@@ -385,6 +398,105 @@ def clean_reason(reason):
     if "estimated loss of Rs." in reason:
         return "Excluded: ranks poorly among eligible crops based on recent market prices and the price forecast."
     return reason
+
+import re as _re
+
+def _inr(x):
+    """Indian digit grouping: 1234567 -> 12,34,567."""
+    n = int(round(float(x)))
+    sign = "-" if n < 0 else ""
+    d = str(abs(n))
+    if len(d) > 3:
+        head, tail = d[:-3], d[-3:]
+        parts = []
+        while len(head) > 2:
+            parts.insert(0, head[-2:]); head = head[:-2]
+        if head: parts.insert(0, head)
+        d = ",".join(parts) + "," + tail
+    return sign + d
+
+def _num(x):
+    f = float(x)
+    return str(int(f)) if f == int(f) else f"{f:g}"
+
+def friendly_reason(reason, lang="en", sym="\u20b9"):
+    """Turn the database's audit sentence into a short headline plus one
+    plain sentence. The stored text in the audit table is untouched; this
+    only changes how the reason is presented to the farmer."""
+    r = reason or ""
+    ta = (lang == "ta")
+    n = r"([\d,]+(?:\.\d+)?)"
+    cost = _re.search(r"costs Rs\. " + n + r" for " + n + r" acres", r)
+    bud = _re.search(r"your Rs\. " + n + r"\b", r)
+    need = _re.search(r"needs " + n + r"\s*mm of water per acre", r)
+    have = _re.search(r"(?:you have|\(you have) " + n + r"\s*mm", r)
+    rain = _re.search(n + r"% below normal", r)
+    mm = "மி.மீ" if ta else "mm"
+    def money(v): return f"{sym}{_inr(float(v.replace(',', '')))}"
+    if cost and bud and need and have:
+        acres, c, b_, nd, hv = _num(cost.group(2)), money(cost.group(1)), money(bud.group(1)), _num(need.group(1)), _num(have.group(1))
+        if ta:
+            return ("பட்ஜெட்டும் நீரும் போதவில்லை.",
+                    f"{acres} ஏக்கரில் பயிரிட சுமார் {c} செலவாகும் (உங்கள் பட்ஜெட் {b_}). மேலும் ஏக்கருக்கு {nd} {mm} நீர் தேவை (உங்களிடம் {hv} {mm}).")
+        return ("Over budget and short on water.",
+                f"Growing it on {acres} acres would cost about {c} (your budget is {b_}), and it needs {nd} {mm} of water per acre (you have {hv} {mm}).")
+    if cost and bud:
+        acres, c, b_ = _num(cost.group(2)), money(cost.group(1)), money(bud.group(1))
+        if ta:
+            return ("பட்ஜெட்டை மீறுகிறது.", f"{acres} ஏக்கரில் பயிரிட சுமார் {c} செலவாகும்; உங்கள் பட்ஜெட் {b_}.")
+        return ("Over budget.", f"Growing it on {acres} acres would cost about {c}, but your budget is {b_}.")
+    if need and have:
+        nd, hv = _num(need.group(1)), _num(have.group(1))
+        if ta:
+            return ("தேவையான நீர் இல்லை.", f"இந்தப் பயிருக்கு ஏக்கருக்கு சுமார் {nd} {mm} நீர் தேவை; உங்களிடம் {hv} {mm} மட்டுமே உள்ளது.")
+        return ("Needs more water than you have.", f"This crop needs about {nd} {mm} of water per acre, but you have {hv} {mm}.")
+    if rain:
+        pc = _num(rain.group(1))
+        if ta:
+            return ("இந்தப் பருவத்தில் மழை குறைவு.", f"இந்த மாவட்டத்தில் மழை இயல்பை விட சுமார் {pc}% குறைவு; அதிக நீர் தேவைப்படும் பயிருக்கு இது போதாது.")
+        return ("Too dry this season.", f"Rainfall in this district is about {pc}% below normal, which is too little for a crop that needs a lot of water.")
+    if "no recent market" in r:
+        if ta:
+            return ("சந்தை விலை கிடைக்கவில்லை.", "இந்த மாவட்டத்தில் இந்தப் பயிருக்கான சமீபத்திய சந்தை விலை கிடைக்கவில்லை, எனவே ஒப்பிட முடியவில்லை.")
+        return ("No recent market price.", "We could not find a recent market price for this crop in this district, so it cannot be compared fairly.")
+    if "estimated loss" in r or "not profitable" in r:
+        if ta:
+            return ("இங்கு லாபமில்லை.", "தற்போதைய விலை மற்றும் விலை முன்னறிவிப்பின்படி, இந்த நிலத்தில் இந்தப் பயிர் நஷ்டம் தரக்கூடும்.")
+        return ("Not profitable here.", "At current prices and the price forecast, this crop is expected to lose money on this plot.")
+    if ta:
+        return ("நல்ல தேர்வு.", "சமீபத்திய சந்தை விலை மற்றும் விலை முன்னறிவிப்பின் அடிப்படையில் இது முன்னணியில் உள்ளது.")
+    return ("Good fit.", "It ranks well on recent market prices and the price forecast.")
+
+def reason_text(reason, lang="en", sym="\u20b9"):
+    h, d = friendly_reason(reason, lang, sym)
+    return f"{h} {d}"
+
+
+def empty_plan_tip(excluded_rows, budget, land, water, lang, sym="\u20b9"):
+    """When no crop made it into the plan, explain what would help.
+    Uses only the reasons already returned by the database; nothing is
+    recalculated and the allocation engine is not involved."""
+    L = T[lang]
+    n = r"([\d,]+(?:\.\d+)?)"
+    budget_only, water_needs = [], []
+    for crop, r in excluded_rows:
+        r = r or ""
+        c = _re.search(r"costs Rs\. " + n + r" for " + n + r" acres", r)
+        nd = _re.search(r"needs " + n + r"\s*mm of water per acre", r)
+        if c and not nd:
+            budget_only.append((float(c.group(1).replace(",", "")) / float(c.group(2).replace(",", "")), crop))
+        if nd:
+            water_needs.append(float(nd.group(1).replace(",", "")))
+    if budget_only:
+        cost_pa, crop = min(budget_only)
+        acres = int((budget / cost_pa) * 0.9 * 2) / 2.0
+        if acres >= 0.5:
+            return L["empty_budget"].format(land=_num(land), budget=f"{sym}{_inr(budget)}", acres=_num(acres), crop=crop_label(crop, lang))
+        return L["empty_budget_small"].format(crop=crop_label(crop, lang), cost=f"{sym}{_inr(cost_pa)}")
+    if water_needs:
+        return L["empty_water"].format(need=_num(min(water_needs)), have=_num(water))
+    return None
+
 
 def build_pdf(name, district, land_acres, budget_inr, water_available, df, excluded_rows, lang="en"):
     import io, os
@@ -579,7 +691,7 @@ def build_pdf(name, district, land_acres, budget_inr, water_available, df, exclu
     for _, row in df.iterrows():
         pdf.set_fill_color(244, 247, 239)
         pdf.set_draw_color(151, 188, 98)
-        text = f"{crop_disp(row['Crop'])} ({row['Land share (%)']}%): {clean_reason(row['Why'])}"
+        text = f"{crop_disp(row['Crop'])} ({row['Land share (%)']}%): {reason_text(row['Why'], 'ta' if use_ta else 'en', 'Rs. ')}"
         pdf.multi_cell(0, 6, text, fill=True, border="L")
         pdf.ln(2)
 
@@ -592,7 +704,7 @@ def build_pdf(name, district, land_acres, budget_inr, water_available, df, exclu
         set_pdf_font("", 9.5)
         pdf.set_text_color(90, 90, 90)
         for crop_name, reason in excluded_rows:
-            pdf.multi_cell(0, 6, f"{crop_disp(crop_name)}: {clean_reason(reason)}")
+            pdf.multi_cell(0, 6, f"{crop_disp(crop_name)}: {reason_text(reason, 'ta' if use_ta else 'en', 'Rs. ')}")
             pdf.ln(1)
 
     # ---- Language fallback note (only shown when Tamil was requested but
@@ -876,8 +988,15 @@ if submitted:
     if any(v is None for v in (district, season, land_acres, budget_inr, water_available)):
         st.warning(L["missing"])
         st.stop()
-    if land_acres > 500:
-        st.warning(L["land_big"])
+    if not (0.1 <= land_acres <= 200):
+        st.warning(L["range_land"])
+        st.stop()
+    if not (1000 <= budget_inr <= 5000000):
+        st.warning(L["range_budget"])
+        st.stop()
+    if not (50 <= water_available <= 3000):
+        st.warning(L["range_water"])
+        st.stop()
 
     try:
         _ = cur.execute("INSERT INTO FARMER (name, district_name) VALUES (%s, %s) RETURNING farmer_id", (name, district))
@@ -965,7 +1084,7 @@ if "last_result" in st.session_state:
         st.markdown(f"""<div class="hero">
             <div class="label">{L['top_pick']}</div>
             <div class="crop">{crop_label(top[0], st.session_state.lang)}</div>
-            <div class="detail">{top[1]}% {L['top_pick_of']} &nbsp;&middot;&nbsp; {clean_reason(top[3])}</div>
+            <div class="detail">{top[1]}% {L['top_pick_of']} &nbsp;&middot;&nbsp; {friendly_reason(top[3], st.session_state.lang)[1]}</div>
         </div>""", unsafe_allow_html=True)
 
     tab_plan_title = f"{L['your_plan']} ({len(included_rows)})"
@@ -1030,14 +1149,19 @@ if "last_result" in st.session_state:
                 pp, lo, hi = fc_info[row["Crop"]]
                 band = (f"<br><span class='sub'>{L['fc_label']}: &#8377;{pp:,.0f} {L['fc_unit']} "
                         f"({L['fc_range']}: &#8377;{lo:,.0f} &ndash; &#8377;{hi:,.0f})</span>")
-            st.markdown(f"<div class='why-card'><b>{row['Label']}</b> ({row['Land share (%)']}%) &mdash; {clean_reason(row['Why'])}{band}</div>", unsafe_allow_html=True)
+            _h, _d = friendly_reason(row['Why'], st.session_state.lang)
+            st.markdown(f"<div class='why-card'><b>{html.escape(str(row['Label']))}</b> &middot; {row['Land share (%)']}%<br><span class='sub'><b>{_h}</b> {_d}</span>{band}</div>", unsafe_allow_html=True)
     else:
         st.warning(L["no_crops"])
+        _tip = empty_plan_tip(excluded_rows, budget_inr, land_acres, water_available, st.session_state.lang)
+        if _tip:
+            st.info(_tip)
 
     st.markdown(f"<span class='section-label'>{tab_excluded_title}</span>", unsafe_allow_html=True)
     if excluded_rows:
         for crop_name, reason in excluded_rows:
-            st.markdown(f"<div class='why-card'><b>{crop_label(crop_name, st.session_state.lang)}</b><br><span class='sub'>{clean_reason(reason)}</span></div>", unsafe_allow_html=True)
+            _h, _d = friendly_reason(reason, st.session_state.lang)
+            st.markdown(f"<div class='why-card why-no'><b>{html.escape(crop_label(crop_name, st.session_state.lang))}</b><br><span class='sub'><b>{_h}</b> {_d}</span></div>", unsafe_allow_html=True)
     else:
         st.success(L["all_included"])
 

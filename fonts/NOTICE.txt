@@ -1,0 +1,4 @@
+Noto Sans Tamil (Regular and Bold)
+Copyright The Noto Project Authors (https://github.com/notofonts/tamil)
+Licensed under the SIL Open Font License, Version 1.1 (https://openfontlicense.org).
+Bundled so the downloadable PDF can render Tamil without a system font install.

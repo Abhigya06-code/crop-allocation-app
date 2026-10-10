@@ -200,6 +200,30 @@ h1,h2,h3,h4,.section-label,.metric-card .metric-value,.hero .crop,.stage-label,.
 .sql-box { background:#06241B; color:#7CF0B8; }
 [data-testid="stSidebar"] { background: rgba(6,40,30,.88) !important; backdrop-filter: blur(20px); }
 .step-badge { background: linear-gradient(135deg,#10B981,#0D9488); }
+
+.pie-legend { display:flex; flex-direction:column; gap:.45rem; margin:.4rem 0 .8rem 0; }
+.pie-legend-row { display:flex; align-items:center; gap:.7rem; background:rgba(255,255,255,.7); border:1px solid rgba(255,255,255,.9); border-radius:14px; padding:.55rem .9rem; box-shadow:0 4px 14px rgba(6,78,59,.08); }
+.pie-legend-row .dot { width:14px; height:14px; border-radius:50%; flex:0 0 auto; }
+.pie-legend-row .nm { color:var(--ink); font-weight:600; flex:1 1 auto; }
+.pie-legend-row .pc { color:#047857; font-weight:700; font-family:'Sora',sans-serif; }
+
+/* ===== Phones and small screens ===== */
+html, body, .stApp { overflow-x:hidden; }
+@media (max-width: 768px) {
+  .block-container { padding-left:1rem !important; padding-right:1rem !important; max-width:100% !important; }
+  .header-band { margin:0 -1rem 1.2rem -1rem; padding:1.7rem 1.2rem 1.9rem; border-radius:0 0 22px 22px; }
+  .header-band h1 { font-size:1.9rem; letter-spacing:-.5px; line-height:1.15; }
+  .header-band p { font-size:.66rem; letter-spacing:2px; }
+  .section-label { font-size:1.12rem; margin-top:1.1rem; }
+  [data-testid="stForm"] { padding:1.1rem 1rem; border-radius:20px !important; }
+  .metric-card { padding:.85rem 1rem; }
+  .metric-card .metric-value { font-size:1.6rem; }
+  .hero { padding:1.4rem 1.25rem; border-radius:22px; }
+  .hero .crop { font-size:2.1rem; }
+  .hero .detail { max-width:100%; font-size:.92rem; }
+  .hero::after { font-size:3.2rem; }
+  [data-testid="stDataFrame"] { max-width:100%; }
+}
 '''
 _STYLE = (_STYLE.replace('@DARK@', DARK).replace('@PRIMARY@', PRIMARY).replace('@ACCENT@', ACCENT).replace('@SECOND@', SECOND))
 st.markdown('<style>' + _STYLE + '</style>', unsafe_allow_html=True)
@@ -217,7 +241,7 @@ T = {
         "water": "Water available — in mm per acre",
         "land_ph": "e.g. 2", "budget_ph": "e.g. 40000", "water_ph": "e.g. 1000",
         "submit": "Get my crop plan", "missing": "Please fill in every field before submitting.",
-        "plan_for": "Plan for", "land_m": "Land (acres)", "budget_m": "Budget (₹)", "rec_m": "Crops recommended",
+        "plan_for": "Plan for", "plan_title": "Crop plan for {name} in {district} district", "land_m": "Land (acres)", "budget_m": "Budget (₹)", "rec_m": "Crops recommended",
         "avg_profit": "Avg. profit per acre (₹)", "your_plan": "Your Crop Plan", "not_rec": "Not Recommended",
         "allocation": "Land Allocation", "details": "Details", "download_pdf": "Download plan as PDF",
         "download_csv": "Download as CSV", "why_chosen": "Why each crop was chosen",
@@ -284,7 +308,7 @@ T = {
         "water": "கிடைக்கும் நீர் — மிமீ/ஏக்கர்",
         "land_ph": "எ.கா. 2", "budget_ph": "எ.கா. 40000", "water_ph": "எ.கா. 1000",
         "submit": "எனது பயிர் திட்டத்தைப் பெறு", "missing": "சமர்ப்பிக்கும் முன் அனைத்து புலங்களையும் நிரப்பவும்.",
-        "plan_for": "திட்டம்", "land_m": "நிலம் (ஏக்கர்)", "budget_m": "பட்ஜெட் (₹)", "rec_m": "பரிந்துரைக்கப்பட்ட பயிர்கள்",
+        "plan_for": "திட்டம்", "plan_title": "{name} · {district} மாவட்டத்திற்கான பயிர் திட்டம்", "land_m": "நிலம் (ஏக்கர்)", "budget_m": "பட்ஜெட் (₹)", "rec_m": "பரிந்துரைக்கப்பட்ட பயிர்கள்",
         "avg_profit": "சராசரி லாபம்/ஏக்கர் (₹)", "your_plan": "உங்கள் பயிர் திட்டம்", "not_rec": "பரிந்துரைக்கப்படவில்லை",
         "allocation": "நில ஒதுக்கீடு", "details": "விவரங்கள்", "download_pdf": "PDF பதிவிறக்கு",
         "download_csv": "CSV பதிவிறக்கு", "why_chosen": "ஒவ்வொரு பயிரும் ஏன் தேர்ந்தெடுக்கப்பட்டது",
@@ -508,7 +532,7 @@ def build_pdf(name, district, land_acres, budget_inr, water_available, df, exclu
     fill = False
     for _, row in df.iterrows():
         pdf.set_x(table_x)
-        pdf.set_fill_color(244, 247, 239) if fill else pdf.set_fill_color(255, 255, 255)
+        pdf.set_fill_color(*((244, 247, 239) if fill else (255, 255, 255)))
         pdf.cell(widths[0], 7, crop_disp(row["Crop"]), border=1, fill=True)
         pdf.cell(widths[1], 7, f"{row['Land share (%)']}%", border=1, fill=True)
         pdf.cell(widths[2], 7, str(row["Season"]) if pd.notna(row["Season"]) else "-", border=1, fill=True)
@@ -537,7 +561,7 @@ def build_pdf(name, district, land_acres, budget_inr, water_available, df, exclu
     pdf.set_text_color(30, 30, 30)
     fill = False
     for _, row in df.iterrows():
-        pdf.set_fill_color(244, 247, 239) if fill else pdf.set_fill_color(255, 255, 255)
+        pdf.set_fill_color(*((244, 247, 239) if fill else (255, 255, 255)))
         pdf.cell(widths2[0], 7, crop_disp(row["Crop"]), border=1, fill=True)
         pdf.cell(widths2[1], 7, str(row["Season"]) if pd.notna(row["Season"]) else "-", border=1, fill=True)
         pdf.cell(widths2[2], 7, str(row["Sow from"]) if pd.notna(row["Sow from"]) else "-", border=1, fill=True)
@@ -799,15 +823,10 @@ with st.sidebar:
     st.divider()
     nav_choice = st.radio(L["nav_label"], [L["nav_plan"], L["nav_dashboard"]], horizontal=False)
     st.session_state.view_mode = "dashboard" if nav_choice == L["nav_dashboard"] else "plan"
-    st.divider()
     if not HOSTED:
+        st.divider()
         st.markdown(f"### {L['db']}")
         st.session_state.db_password = st.text_input(L["pw"], type="password", value=st.session_state.db_password)
-    st.divider()
-    st.markdown(f"**{L['pipeline']}**")
-    st.caption(L["pipeline_desc"])
-    st.divider()
-    st.caption("💡 " + L["sidebar_tip"].format(panel=L["behind_scenes"]))
 
 L = T[st.session_state.lang]
 st.markdown(f"""<div class="header-band"><h1>{L['title']}</h1><p>{L['subtitle']}</p></div>""", unsafe_allow_html=True)
@@ -836,9 +855,6 @@ _ = cur.execute("SELECT district_name FROM DISTRICT ORDER BY district_name")
 districts = [row[0] for row in cur.fetchall()]
 
 st.markdown(f"<span class='section-label'>{L['form_title']}</span>", unsafe_allow_html=True)
-if HOSTED:
-    st.caption("This is a demo database. Please use a nickname instead of your real name." if st.session_state.lang == "en"
-               else "இது ஒரு டெமோ தரவுத்தளம். உங்கள் உண்மையான பெயருக்குப் பதிலாக புனைப்பெயரைப் பயன்படுத்தவும்.")
 with st.form("farmer_form"):
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -846,10 +862,10 @@ with st.form("farmer_form"):
         district = st.selectbox(L["district"], districts, index=None, placeholder="Select a district", key="farmer_district")
     with c2:
         season = st.selectbox(L["season"], ["Kharif", "Rabi", "Zaid"], index=None, placeholder="Select a season", key="farmer_season")
-        land_acres = st.number_input(L["land"], min_value=0.1, value=None, step=0.5, placeholder=L["land_ph"], key="farmer_land")
+        land_acres = st.number_input(L["land"], min_value=0.1, value=None, step=0.5, key="farmer_land")
     with c3:
-        budget_inr = st.number_input(L["budget"], min_value=1000, value=None, step=1000, placeholder=L["budget_ph"], key="farmer_budget")
-        water_available = st.number_input(L["water"], min_value=50, value=None, step=50, placeholder=L["water_ph"], key="farmer_water")
+        budget_inr = st.number_input(L["budget"], min_value=1000, value=None, step=1000, key="farmer_budget")
+        water_available = st.number_input(L["water"], min_value=50, value=None, step=50, key="farmer_water")
     submitted = st.form_submit_button(L["submit"], use_container_width=True)
 
 if submitted:
@@ -929,7 +945,7 @@ if "last_result" in st.session_state:
         except Exception:
             conn.rollback()
 
-    st.markdown(f"<span class='section-label'>{L['plan_for']}: {name} — {district}</span>", unsafe_allow_html=True)
+    st.markdown(f"<span class='section-label'>{L['plan_title'].format(name=html.escape(name), district=html.escape(district))}</span>", unsafe_allow_html=True)
 
     total_crops = len(included_rows) + len(excluded_rows)
     metrics = [
@@ -984,10 +1000,11 @@ if "last_result" in st.session_state:
             _ = st.pyplot(fig, use_container_width=True)
             plt.close(fig)
             st.markdown(
-                "<div style='display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:4px'>" +
-                "".join(f"<span style='display:inline-flex;align-items:center;gap:6px;font-size:0.9rem;color:{DARK}'>"
-                        f"<span style='width:12px;height:12px;border-radius:3px;background:{c};display:inline-block'></span>"
-                        f"{html.escape(str(lbl))}</span>" for c, lbl in zip(colors, df["Label"])) +
+                "<div class='pie-legend'>" +
+                "".join(f"<div class='pie-legend-row'><span class='dot' style='background:{c}'></span>"
+                        f"<span class='nm'>{html.escape(str(lbl))}</span>"
+                        f"<span class='pc'>{v:.1f}%</span></div>"
+                        for c, lbl, v in zip(colors, df["Label"], df["Land share (%)"])) +
                 "</div>", unsafe_allow_html=True)
         with right:
             st.markdown(f"<span class='section-label'>{L['details']}</span>", unsafe_allow_html=True)

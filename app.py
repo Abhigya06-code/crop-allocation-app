@@ -272,8 +272,10 @@ def build_pdf(name, district, land_acres, budget_inr, water_available, df, exclu
     # So we only produce a Tamil PDF when both are available; otherwise we
     # fall back to English and say so at the bottom of the PDF.
     font_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+    app_dir = os.path.dirname(os.path.abspath(__file__))
     tamil_font_paths = [  # (regular, bold or None)
         (os.path.join(font_dir, "NotoSansTamil-Regular.ttf"), os.path.join(font_dir, "NotoSansTamil-Bold.ttf")),
+        (os.path.join(app_dir, "NotoSansTamil-Regular.ttf"), os.path.join(app_dir, "NotoSansTamil-Bold.ttf")),
         ("/usr/share/fonts/truetype/noto/NotoSansTamil-Regular.ttf", "/usr/share/fonts/truetype/noto/NotoSansTamil-Bold.ttf"),
         ("/usr/share/fonts/opentype/noto/NotoSansTamil-Regular.otf", "/usr/share/fonts/opentype/noto/NotoSansTamil-Bold.otf"),
         ("/usr/share/fonts/truetype/lohit-tamil/Lohit-Tamil.ttf", None),
@@ -348,7 +350,7 @@ def build_pdf(name, district, land_acres, budget_inr, water_available, df, exclu
     palette = ["#2C5F2D", "#6E9B4F", "#97BC62", "#D69A52", "#B4CB8F", "#4A7A3D"]
     colors = [palette[i % len(palette)] for i in range(len(df))]
     wedges, texts, autotexts = ax.pie(
-        df["Land share (%)"], labels=df["Crop"], autopct="%1.1f%%",
+        pd.to_numeric(df["Land share (%)"], errors="coerce").astype(float), labels=df["Crop"], autopct="%1.1f%%",
         colors=colors, startangle=90, textprops={"fontsize": 8.5, "color": "#14261A"},
         wedgeprops={"edgecolor": "white", "linewidth": 1.5})
     for at in autotexts:
@@ -626,7 +628,7 @@ ORDER BY n DESC"""
         st.caption(L["dash_inclusion_desc"])
         if crop_rows:
             names = [crop_label(r[0], lang) for r in crop_rows]
-            counts = [r[1] for r in crop_rows]
+            counts = [float(r[1]) for r in crop_rows]
             fig, ax = plt.subplots(figsize=(5, 3.2))
             ax.barh(names[::-1], counts[::-1], color=PRIMARY)
             ax.set_xlabel(L["dash_col_times"])
@@ -845,6 +847,8 @@ if "last_result" in st.session_state:
     st.markdown(f"<span class='section-label'>{tab_plan_title}</span>", unsafe_allow_html=True)
     if included_rows:
         df = pd.DataFrame(included_rows, columns=["Crop", "Land share (%)", "Score", "Why", "Season", "Sow from", "Sow to"])
+        df["Land share (%)"] = pd.to_numeric(df["Land share (%)"], errors="coerce").astype(float)
+        df["Score"] = pd.to_numeric(df["Score"], errors="coerce").astype(float)
         df["Label"] = df["Crop"].map(lambda c: crop_label(c, st.session_state.lang))
         df[["Season", "Sow from", "Sow to"]] = df[["Season", "Sow from", "Sow to"]].fillna("-")
         df["Why"] = df["Why"].fillna("")

@@ -1153,7 +1153,7 @@ if "last_result" in st.session_state:
             st.markdown(f"<span class='section-label'>{L['details']}</span>", unsafe_allow_html=True)
             display_df = df[["Label", "Land share (%)", "Season", "Sow from", "Sow to"]].copy()
             if plan_mode == "partial":
-                display_df.insert(2, L["acres_col"], (df["Land share (%)"] / 100.0 * float(planted_acres)).round(1))
+                display_df.insert(2, L["acres_col"], (df["Land share (%)"] / 100.0 * float(planted_acres)).round(2))
             display_df = display_df.reset_index(drop=True)
             _ = st.dataframe(display_df, use_container_width=True, hide_index=True)
             try:

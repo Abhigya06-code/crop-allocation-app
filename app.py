@@ -253,6 +253,8 @@ T = {
         "empty_budget_small": "Your budget is too small to grow any of these crops, even on a small plot. The cheapest option ({crop}) costs about {cost} per acre.",
         "empty_water": "Your water is the limit. The least water-hungry crop here needs about {need} mm per acre, but you entered {have} mm.",
         "no_crops": "No crops were profitable and within limits for this plot. Try a larger budget or more water.",
+        "partial_banner": "Your budget cannot cover all {land} acres, so this plan uses about {planted} acres and leaves about {rest} acres unplanted. The crop mix below is for the planted part.",
+        "acres_col": "Acres",
         "all_included": "Every eligible crop made it into the plan, nothing was excluded.",
         "top_pick": "Top Recommendation", "top_pick_of": "of your land",
         "footer": "Crop Allocation Advisor · DBMS Course Project · Batch 6",
@@ -326,6 +328,8 @@ T = {
         "empty_budget_small": "உங்கள் பட்ஜெட் மிகவும் குறைவு; சிறிய நிலத்திலும் இந்தப் பயிர்களில் எதையும் பயிரிட முடியாது. மிகக் குறைந்த செலவுள்ள பயிருக்கு ({crop}) ஏக்கருக்கு சுமார் {cost} செலவாகும்.",
         "empty_water": "உங்கள் நீர்தான் வரம்பு. இங்கு மிகக் குறைந்த நீர் தேவைப்படும் பயிருக்கு ஏக்கருக்கு சுமார் {need} மி.மீ தேவை; நீங்கள் {have} மி.மீ உள்ளிட்டுள்ளீர்கள்.",
         "no_crops": "இந்த நிலத்திற்கு லாபகரமான பயிர்கள் இல்லை. அதிக பட்ஜெட் அல்லது நீரை முயற்சிக்கவும்.",
+        "partial_banner": "உங்கள் பட்ஜெட் {land} ஏக்கர் முழுவதற்கும் போதாது. எனவே இந்தத் திட்டம் சுமார் {planted} ஏக்கரில் பயிரிடுகிறது; சுமார் {rest} ஏக்கர் பயிரிடப்படாமல் இருக்கும். கீழுள்ள பயிர் கலவை பயிரிடும் பகுதிக்கானது.",
+        "acres_col": "ஏக்கர்",
         "all_included": "தகுதியான அனைத்து பயிர்களும் திட்டத்தில் சேர்க்கப்பட்டன.",
         "top_pick": "சிறந்த பரிந்துரை", "top_pick_of": "உங்கள் நிலத்தில்",
         "footer": "பயிர் ஒதுக்கீடு ஆலோசகர் · DBMS பாடத்திட்டம் · Batch 6",
@@ -432,6 +436,12 @@ def friendly_reason(reason, lang="en", sym="\u20b9"):
     have = _re.search(r"(?:you have|\(you have) " + n + r"\s*mm", r)
     rain = _re.search(n + r"% below normal", r)
     mm = "மி.மீ" if ta else "mm"
+    part = _re.search(r"partial plan.*?all " + n + r" acres.*?about " + n + r" acres", r)
+    if part:
+        la, pa = _num(part.group(1)), _num(part.group(2))
+        if ta:
+            return ("சிறிய பரப்புக்கு ஏற்றது.", f"உங்கள் பட்ஜெட் {la} ஏக்கரில் சுமார் {pa} ஏக்கருக்கு போதும்; இந்தப் பயிர் அந்தப் பகுதியில் பயிரிடும் கலவையில் உள்ளது.")
+        return ("Fits a smaller area.", f"Your budget covers about {pa} of your {la} acres, so this crop is part of the mix planted on those acres.")
     def money(v): return f"{sym}{_inr(float(v.replace(',', '')))}"
     if cost and bud and need and have:
         acres, c, b_, nd, hv = _num(cost.group(2)), money(cost.group(1)), money(bud.group(1)), _num(need.group(1)), _num(have.group(1))
@@ -960,7 +970,6 @@ except Exception as e:
 # to it, so it returns before the farmer form is ever built.
 if st.session_state.get("view_mode") == "dashboard":
     render_dashboard(cur, L, st.session_state.lang)
-    st.markdown(f"<hr style='margin-top:3rem;border-color:#D8E2CC'><p style='text-align:center;color:#5B6E56;font-size:0.8rem'>{L['footer']}</p>", unsafe_allow_html=True)
     st.stop()
 
 _ = cur.execute("SELECT district_name FROM DISTRICT ORDER BY district_name")
@@ -1020,6 +1029,14 @@ if submitted:
                WHERE ad.request_id = %s AND ad.included = false ORDER BY c.crop_name""", (request_id,))
         excluded_rows = cur.fetchall()
         excluded_rows = [(c, r if r else "") for c, r in excluded_rows]
+        plan_mode, planted_acres = "full", land_acres
+        try:
+            _ = cur.execute("SELECT plan_mode, planted_acres FROM ALLOCATION_REQUEST WHERE request_id = %s", (request_id,))
+            _pm = cur.fetchone()
+            if _pm and _pm[0] == "partial" and _pm[1] is not None:
+                plan_mode, planted_acres = "partial", float(_pm[1])
+        except Exception:
+            conn.rollback()
 
         # Store the result so it survives the app rerunning for any other
         # reason (like switching language), not just this one script pass.
@@ -1028,6 +1045,7 @@ if submitted:
             "budget_inr": budget_inr, "water_available": water_available,
             "included_rows": included_rows, "excluded_rows": excluded_rows,
             "request_id": request_id, "season": season,
+            "plan_mode": plan_mode, "planted_acres": planted_acres,
         }
 
     except psycopg2.errors.UndefinedFunction:
@@ -1049,6 +1067,8 @@ if "last_result" in st.session_state:
     included_rows, excluded_rows = r["included_rows"], r["excluded_rows"]
     request_id = r["request_id"]
     season_used = r.get("season")
+    plan_mode = r.get("plan_mode", "full")
+    planted_acres = r.get("planted_acres", land_acres)
 
     # Forecast price and its 95% interval for this district, if available.
     fc_info = {}
@@ -1068,7 +1088,7 @@ if "last_result" in st.session_state:
 
     total_crops = len(included_rows) + len(excluded_rows)
     metrics = [
-        (L["land_m"], f"{land_acres}"),
+        (L["land_m"], (f"{planted_acres:g} / {land_acres:g}" if plan_mode == "partial" else f"{land_acres}")),
         (L["budget_m"], f"{budget_inr:,.0f}"),
         (L["rec_m"], f"{len(included_rows)} / {total_crops}"),
     ]
@@ -1086,6 +1106,10 @@ if "last_result" in st.session_state:
             <div class="crop">{crop_label(top[0], st.session_state.lang)}</div>
             <div class="detail">{top[1]}% {L['top_pick_of']} &nbsp;&middot;&nbsp; {friendly_reason(top[3], st.session_state.lang)[1]}</div>
         </div>""", unsafe_allow_html=True)
+
+    if plan_mode == "partial" and included_rows:
+        _rest = round(float(land_acres) - float(planted_acres), 1)
+        st.info(L["partial_banner"].format(land=f"{float(land_acres):g}", planted=f"{float(planted_acres):g}", rest=f"{_rest:g}"))
 
     tab_plan_title = f"{L['your_plan']} ({len(included_rows)})"
     tab_excluded_title = f"{L['not_rec']} ({len(excluded_rows)})"
@@ -1127,7 +1151,10 @@ if "last_result" in st.session_state:
                 "</div>", unsafe_allow_html=True)
         with right:
             st.markdown(f"<span class='section-label'>{L['details']}</span>", unsafe_allow_html=True)
-            display_df = df[["Label", "Land share (%)", "Season", "Sow from", "Sow to"]].reset_index(drop=True)
+            display_df = df[["Label", "Land share (%)", "Season", "Sow from", "Sow to"]].copy()
+            if plan_mode == "partial":
+                display_df.insert(2, L["acres_col"], (df["Land share (%)"] / 100.0 * float(planted_acres)).round(1))
+            display_df = display_df.reset_index(drop=True)
             _ = st.dataframe(display_df, use_container_width=True, hide_index=True)
             try:
                 pdf_bytes = build_pdf(name, district, land_acres, budget_inr, water_available, df, excluded_rows, lang=st.session_state.lang)
@@ -1268,4 +1295,3 @@ ORDER BY ad.included DESC, ad.land_share_pct DESC;"""
         st.markdown(f"<div class='row-count'>{L['run_query']} {len(stage5_rows)} {L['rows_returned']}</div>", unsafe_allow_html=True)
         st.dataframe(stage5_df, use_container_width=True, hide_index=True)
 
-st.markdown(f"<hr style='margin-top:3rem;border-color:#D8E2CC'><p style='text-align:center;color:#5B6E56;font-size:0.8rem'>{L['footer']}</p>", unsafe_allow_html=True)
